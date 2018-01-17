@@ -1,22 +1,21 @@
-/*package annotator.notifier */
+/* package annotator.notifier */
 
-"use strict";
+'use strict'
 
-var util = require('./util');
-var $ = util.$;
+var util = require('./util')
+var $ = util.$
 
 var INFO = 'info',
-    SUCCESS = 'success',
-    ERROR = 'error';
+  SUCCESS = 'success',
+  ERROR = 'error'
 
-var bannerTemplate = "<div class='annotator-notice'></div>";
+var bannerTemplate = "<div class='annotator-notice'></div>"
 var bannerClasses = {
-    show: "annotator-notice-show",
-    info: "annotator-notice-info",
-    success: "annotator-notice-success",
-    error: "annotator-notice-error"
-};
-
+  show: 'annotator-notice-show',
+  info: 'annotator-notice-info',
+  success: 'annotator-notice-success',
+  error: 'annotator-notice-error'
+}
 
 /**
  * function:: banner(message[, severity=notification.INFO])
@@ -32,51 +31,50 @@ var bannerClasses = {
  * :returns:
  *   An object with a `close` method that can be used to close the banner.
  */
-function banner(message, severity) {
-    if (typeof severity === 'undefined' || severity === null) {
-        severity = INFO;
-    }
+function banner (message, severity) {
+  if (typeof severity === 'undefined' || severity === null) {
+    severity = INFO
+  }
 
-    var element = $(bannerTemplate)[0];
-    var closed = false;
+  var element = $(bannerTemplate)[0]
+  var closed = false
 
-    var close = function () {
-        if (closed) { return; }
+  var close = function () {
+    if (closed) { return }
 
-        closed = true;
+    closed = true
 
-        $(element)
+    $(element)
             .removeClass(bannerClasses.show)
-            .removeClass(bannerClasses[severity]);
+            .removeClass(bannerClasses[severity])
 
         // The removal of the above classes triggers a 400ms ease-out
         // transition, so we can dispose the element from the DOM after
         // 500ms.
-        setTimeout(function () {
-            $(element).remove();
-        }, 500);
-    };
+    setTimeout(function () {
+      $(element).remove()
+    }, 500)
+  }
 
-    $(element)
+  $(element)
         .addClass(bannerClasses.show)
         .addClass(bannerClasses[severity])
-        .html(util.escapeHtml(message || ""))
-        .appendTo(global.document.body);
+        .html(util.escapeHtml(message || ''))
+        .appendTo(global.document.body)
 
-    $(element).on('click', close);
+  $(element).on('click', close)
 
     // Hide the notifier after 5s
-    setTimeout(close, 5000);
+  setTimeout(close, 5000)
 
-    return {
-        close: close
-    };
+  return {
+    close: close
+  }
 }
 
+exports.banner = banner
+exports.defaultNotifier = banner
 
-exports.banner = banner;
-exports.defaultNotifier = banner;
-
-exports.INFO = INFO;
-exports.SUCCESS = SUCCESS;
-exports.ERROR = ERROR;
+exports.INFO = INFO
+exports.SUCCESS = SUCCESS
+exports.ERROR = ERROR

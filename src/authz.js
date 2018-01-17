@@ -1,9 +1,8 @@
-/*package annotator.authz */
+/* package annotator.authz */
 
-"use strict";
+'use strict'
 
-var AclAuthzPolicy;
-
+var AclAuthzPolicy
 
 /**
  * function:: acl()
@@ -12,16 +11,15 @@ var AclAuthzPolicy;
  * :class:`annotator.authz.AclAuthzPolicy`.
  *
  */
-exports.acl = function acl() {
-    var authorization = new AclAuthzPolicy();
+exports.acl = function acl () {
+  var authorization = new AclAuthzPolicy()
 
-    return {
-        configure: function (registry) {
-            registry.registerUtility(authorization, 'authorizationPolicy');
-        }
-    };
-};
-
+  return {
+    configure: function (registry) {
+      registry.registerUtility(authorization, 'authorizationPolicy')
+    }
+  }
+}
 
 /**
  * class:: AclAuthzPolicy()
@@ -29,9 +27,8 @@ exports.acl = function acl() {
  * An authorization policy that permits actions based on access control lists.
  *
  */
-AclAuthzPolicy = exports.AclAuthzPolicy = function AclAuthzPolicy() {
-};
-
+AclAuthzPolicy = exports.AclAuthzPolicy = function AclAuthzPolicy () {
+}
 
 /**
  * function:: AclAuthzPolicy.prototype.permits(action, context, identity)
@@ -63,36 +60,35 @@ AclAuthzPolicy = exports.AclAuthzPolicy = function AclAuthzPolicy() {
  * identity.
  */
 AclAuthzPolicy.prototype.permits = function (action, context, identity) {
-    var userid = this.authorizedUserId(identity);
-    var permissions = context.permissions;
+  var userid = this.authorizedUserId(identity)
+  var permissions = context.permissions
 
-    if (permissions) {
+  if (permissions) {
         // Fine-grained authorization on permissions field
-        var tokens = permissions[action];
+    var tokens = permissions[action]
 
-        if (typeof tokens === 'undefined' || tokens === null) {
+    if (typeof tokens === 'undefined' || tokens === null) {
             // Missing tokens array for this action: anyone can perform
             // action.
-            return true;
-        }
-
-        for (var i = 0, len = tokens.length; i < len; i++) {
-            if (userid === tokens[i]) {
-                return true;
-            }
-        }
-
-        // No tokens matched: action should not be performed.
-        return false;
-    } else if (context.user) {
-        // Coarse-grained authorization
-        return userid === context.user;
+      return true
     }
 
-    // No authorization info on context: free-for-all!
-    return true;
-};
+    for (var i = 0, len = tokens.length; i < len; i++) {
+      if (userid === tokens[i]) {
+        return true
+      }
+    }
 
+        // No tokens matched: action should not be performed.
+    return false
+  } else if (context.user) {
+        // Coarse-grained authorization
+    return userid === context.user
+  }
+
+    // No authorization info on context: free-for-all!
+  return true
+}
 
 /**
  * function:: AclAuthzPolicy.prototype.authorizedUserId(identity)
@@ -100,5 +96,5 @@ AclAuthzPolicy.prototype.permits = function (action, context, identity) {
  * Returns the authorized userid for the user identified by `identity`.
  */
 AclAuthzPolicy.prototype.authorizedUserId = function (identity) {
-    return identity;
-};
+  return identity
+}

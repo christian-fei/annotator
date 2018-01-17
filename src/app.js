@@ -1,15 +1,15 @@
-/*package annotator */
+/* package annotator */
 
-"use strict";
+'use strict'
 
-var extend = require('backbone-extend-standalone');
-var Promise = require('es6-promise').Promise;
+var extend = require('backbone-extend-standalone')
+var Promise = require('es6-promise').Promise
 
-var authz = require('./authz');
-var identity = require('./identity');
-var notification = require('./notification');
-var registry = require('./registry');
-var storage = require('./storage');
+var authz = require('./authz')
+var identity = require('./identity')
+var notification = require('./notification')
+var registry = require('./registry')
+var storage = require('./storage')
 
 /**
  * class:: App()
@@ -18,22 +18,21 @@ var storage = require('./storage');
  * manage the configuration of a particular annotation application, and are the
  * starting point for most deployments of Annotator.
  */
-function App() {
-    this.modules = [];
-    this.registry = new registry.Registry();
+function App () {
+  this.modules = []
+  this.registry = new registry.Registry()
 
-    this._started = false;
+  this._started = false
 
     // Register a bunch of default utilities
-    this.registry.registerUtility(notification.defaultNotifier,
-                                  'notifier');
+  this.registry.registerUtility(notification.defaultNotifier,
+                                  'notifier')
 
     // And set up default components.
-    this.include(authz.acl);
-    this.include(identity.simple);
-    this.include(storage.noop);
+  this.include(authz.acl)
+  this.include(identity.simple)
+  this.include(storage.noop)
 }
-
 
 /**
  * function:: App.prototype.include(module[, options])
@@ -50,14 +49,13 @@ function App() {
  * :rtype: App
  */
 App.prototype.include = function (module, options) {
-    var mod = module(options);
-    if (typeof mod.configure === 'function') {
-        mod.configure(this.registry);
-    }
-    this.modules.push(mod);
-    return this;
-};
-
+  var mod = module(options)
+  if (typeof mod.configure === 'function') {
+    mod.configure(this.registry)
+  }
+  this.modules.push(mod)
+  return this
+}
 
 /**
  * function:: App.prototype.start()
@@ -72,28 +70,27 @@ App.prototype.include = function (module, options) {
  * :rtype: Promise
  */
 App.prototype.start = function () {
-    if (this._started) {
-        return;
-    }
-    this._started = true;
+  if (this._started) {
+    return
+  }
+  this._started = true
 
-    var self = this;
-    var reg = this.registry;
+  var self = this
+  var reg = this.registry
 
-    this.authz = reg.getUtility('authorizationPolicy');
-    this.ident = reg.getUtility('identityPolicy');
-    this.notify = reg.getUtility('notifier');
+  this.authz = reg.getUtility('authorizationPolicy')
+  this.ident = reg.getUtility('identityPolicy')
+  this.notify = reg.getUtility('notifier')
 
-    this.annotations = new storage.StorageAdapter(
+  this.annotations = new storage.StorageAdapter(
         reg.getUtility('storage'),
         function () {
-            return self.runHook.apply(self, arguments);
+          return self.runHook.apply(self, arguments)
         }
-    );
+    )
 
-    return this.runHook('start', [this]);
-};
-
+  return this.runHook('start', [this])
+}
 
 /**
  * function:: App.prototype.destroy()
@@ -105,9 +102,8 @@ App.prototype.start = function () {
  * :rtype: Promise
  */
 App.prototype.destroy = function () {
-    return this.runHook('destroy');
-};
-
+  return this.runHook('destroy')
+}
 
 /**
  * function:: App.prototype.runHook(name[, args])
@@ -123,16 +119,15 @@ App.prototype.destroy = function () {
  * :rtype: Promise
  */
 App.prototype.runHook = function (name, args) {
-    var results = [];
-    for (var i = 0, len = this.modules.length; i < len; i++) {
-        var mod = this.modules[i];
-        if (typeof mod[name] === 'function') {
-            results.push(mod[name].apply(mod, args));
-        }
+  var results = []
+  for (var i = 0, len = this.modules.length; i < len; i++) {
+    var mod = this.modules[i]
+    if (typeof mod[name] === 'function') {
+      results.push(mod[name].apply(mod, args))
     }
-    return Promise.all(results);
-};
-
+  }
+  return Promise.all(results)
+}
 
 /**
  * function:: App.extend(object)
@@ -157,7 +152,6 @@ App.prototype.runHook = function (name, args) {
  * :returns: The subclass constructor.
  * :rtype: Function
  */
-App.extend = extend;
+App.extend = extend
 
-
-exports.App = App;
+exports.App = App

@@ -1,6 +1,6 @@
-/*package annotator.registry */
+/* package annotator.registry */
 
-"use strict";
+'use strict'
 
 /**
  * class:: Registry()
@@ -26,8 +26,8 @@
  *         };
  *     }
  */
-function Registry() {
-    this.utilities = {};
+function Registry () {
+  this.utilities = {}
 }
 
 /**
@@ -39,8 +39,8 @@ function Registry() {
  * :param string iface: The name of the interface.
  */
 Registry.prototype.registerUtility = function (component, iface) {
-    this.utilities[iface] = component;
-};
+  this.utilities[iface] = component
+}
 
 /**
  * function:: Registry.prototype.getUtility(iface)
@@ -52,12 +52,12 @@ Registry.prototype.registerUtility = function (component, iface) {
  * :throws LookupError: If no component is found for interface `iface`.
  */
 Registry.prototype.getUtility = function (iface) {
-    var component = this.queryUtility(iface);
-    if (component === null) {
-        throw new LookupError(iface);
-    }
-    return component;
-};
+  var component = this.queryUtility(iface)
+  if (component === null) {
+    throw new LookupError(iface)
+  }
+  return component
+}
 
 /**
  * function:: Registry.prototype.queryUtility(iface)
@@ -69,25 +69,24 @@ Registry.prototype.getUtility = function (iface) {
  * :returns: Component matching `iface`, if found; `null` otherwise.
  */
 Registry.prototype.queryUtility = function (iface) {
-    var component = this.utilities[iface];
-    if (typeof component === 'undefined' || component === null) {
-        return null;
-    }
-    return component;
-};
-
+  var component = this.utilities[iface]
+  if (typeof component === 'undefined' || component === null) {
+    return null
+  }
+  return component
+}
 
 /**
  * class:: LookupError(iface)
  *
  * The error thrown when a registry component lookup fails.
  */
-function LookupError(iface) {
-    this.name = 'LookupError';
-    this.message = 'No utility registered for interface "' + iface + '".';
+function LookupError (iface) {
+  this.name = 'LookupError'
+  this.message = 'No utility registered for interface "' + iface + '".'
 }
-LookupError.prototype = Object.create(Error.prototype);
-LookupError.prototype.constructor = LookupError;
+LookupError.prototype = Object.create(Error.prototype)
+LookupError.prototype.constructor = LookupError
 
-exports.LookupError = LookupError;
-exports.Registry = Registry;
+exports.LookupError = LookupError
+exports.Registry = Registry

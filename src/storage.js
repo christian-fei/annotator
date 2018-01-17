@@ -1,22 +1,20 @@
-/*package annotator.storage */
+/* package annotator.storage */
 
-"use strict";
+'use strict'
 
-var util = require('./util');
-var $ = util.$;
-var _t = util.gettext;
-var Promise = util.Promise;
-
+var util = require('./util')
+var $ = util.$
+var _t = util.gettext
+var Promise = util.Promise
 
 // id returns an identifier unique within this session
 var id = (function () {
-    var counter;
-    counter = -1;
-    return function () {
-        return counter += 1;
-    };
-}());
-
+  var counter
+  counter = -1
+  return function () {
+    return counter += 1
+  }
+}())
 
 /**
  * function:: debug()
@@ -31,39 +29,38 @@ var id = (function () {
  *
  */
 exports.debug = function () {
-    function trace(action, annotation) {
-        var copyAnno = JSON.parse(JSON.stringify(annotation));
-        console.debug("annotator.storage.debug: " + action, copyAnno);
+  function trace (action, annotation) {
+    var copyAnno = JSON.parse(JSON.stringify(annotation))
+    console.debug('annotator.storage.debug: ' + action, copyAnno)
+  }
+
+  return {
+    create: function (annotation) {
+      annotation.id = id()
+      trace('create', annotation)
+      return annotation
+    },
+
+    update: function (annotation) {
+      trace('update', annotation)
+      return annotation
+    },
+
+    'delete': function (annotation) {
+      trace('destroy', annotation)
+      return annotation
+    },
+
+    query: function (queryObj) {
+      trace('query', queryObj)
+      return {results: [], meta: {total: 0}}
+    },
+
+    configure: function (registry) {
+      registry.registerUtility(this, 'storage')
     }
-
-    return {
-        create: function (annotation) {
-            annotation.id = id();
-            trace('create', annotation);
-            return annotation;
-        },
-
-        update: function (annotation) {
-            trace('update', annotation);
-            return annotation;
-        },
-
-        'delete': function (annotation) {
-            trace('destroy', annotation);
-            return annotation;
-        },
-
-        query: function (queryObj) {
-            trace('query', queryObj);
-            return {results: [], meta: {total: 0}};
-        },
-
-        configure: function (registry) {
-            registry.registerUtility(this, 'storage');
-        }
-    };
-};
-
+  }
+}
 
 /**
  * function:: noop()
@@ -77,36 +74,34 @@ exports.debug = function () {
  *
  */
 exports.noop = function () {
-    return {
-        create: function (annotation) {
-            if (typeof annotation.id === 'undefined' ||
+  return {
+    create: function (annotation) {
+      if (typeof annotation.id === 'undefined' ||
                 annotation.id === null) {
-                annotation.id = id();
-            }
-            return annotation;
-        },
+        annotation.id = id()
+      }
+      return annotation
+    },
 
-        update: function (annotation) {
-            return annotation;
-        },
+    update: function (annotation) {
+      return annotation
+    },
 
-        'delete': function (annotation) {
-            return annotation;
-        },
+    'delete': function (annotation) {
+      return annotation
+    },
 
-        query: function () {
-            return {results: []};
-        },
+    query: function () {
+      return {results: []}
+    },
 
-        configure: function (registry) {
-            registry.registerUtility(this, 'storage');
-        }
-    };
-};
+    configure: function (registry) {
+      registry.registerUtility(this, 'storage')
+    }
+  }
+}
 
-
-var HttpStorage;
-
+var HttpStorage
 
 /**
  * function:: http([options])
@@ -118,33 +113,32 @@ var HttpStorage;
  *   Configuration options. For available options see
  *   :attr:`~annotator.storage.HttpStorage.options`.
  */
-exports.http = function http(options) {
+exports.http = function http (options) {
     // This gets overridden on app start
-    var notify = function () {};
+  var notify = function () {}
 
-    if (typeof options === 'undefined' || options === null) {
-        options = {};
-    }
+  if (typeof options === 'undefined' || options === null) {
+    options = {}
+  }
 
     // Use the notifier unless an onError handler has been set.
-    options.onError = options.onError || function (msg, xhr) {
-        console.error(msg, xhr);
-        notify(msg, 'error');
-    };
+  options.onError = options.onError || function (msg, xhr) {
+    console.error(msg, xhr)
+    notify(msg, 'error')
+  }
 
-    var storage = new HttpStorage(options);
+  var storage = new HttpStorage(options)
 
-    return {
-        configure: function (registry) {
-            registry.registerUtility(storage, 'storage');
-        },
+  return {
+    configure: function (registry) {
+      registry.registerUtility(storage, 'storage')
+    },
 
-        start: function (app) {
-            notify = app.notify;
-        }
-    };
-};
-
+    start: function (app) {
+      notify = app.notify
+    }
+  }
+}
 
 /**
  * class:: HttpStorage([options])
@@ -155,10 +149,10 @@ exports.http = function http(options) {
  *
  * :param Object options: See :attr:`~annotator.storage.HttpStorage.options`.
  */
-HttpStorage = exports.HttpStorage = function HttpStorage(options) {
-    this.options = $.extend(true, {}, HttpStorage.options, options);
-    this.onError = this.options.onError;
-};
+HttpStorage = exports.HttpStorage = function HttpStorage (options) {
+  this.options = $.extend(true, {}, HttpStorage.options, options)
+  this.onError = this.options.onError
+}
 
 /**
  * function:: HttpStorage.prototype.create(annotation)
@@ -176,8 +170,8 @@ HttpStorage = exports.HttpStorage = function HttpStorage(options) {
  * :rtype: Promise
  */
 HttpStorage.prototype.create = function (annotation) {
-    return this._apiRequest('create', annotation);
-};
+  return this._apiRequest('create', annotation)
+}
 
 /**
  * function:: HttpStorage.prototype.update(annotation)
@@ -195,8 +189,8 @@ HttpStorage.prototype.create = function (annotation) {
  * :rtype: Promise
  */
 HttpStorage.prototype.update = function (annotation) {
-    return this._apiRequest('update', annotation);
-};
+  return this._apiRequest('update', annotation)
+}
 
 /**
  * function:: HttpStorage.prototype.delete(annotation)
@@ -213,8 +207,8 @@ HttpStorage.prototype.update = function (annotation) {
  * :rtype: Promise
  */
 HttpStorage.prototype['delete'] = function (annotation) {
-    return this._apiRequest('destroy', annotation);
-};
+  return this._apiRequest('destroy', annotation)
+}
 
 /**
  * function:: HttpStorage.prototype.query(queryObj)
@@ -227,13 +221,13 @@ HttpStorage.prototype['delete'] = function (annotation) {
  * :rtype: Promise
  */
 HttpStorage.prototype.query = function (queryObj) {
-    return this._apiRequest('search', queryObj)
+  return this._apiRequest('search', queryObj)
     .then(function (obj) {
-        var rows = obj.rows;
-        delete obj.rows;
-        return {results: rows, meta: obj};
-    });
-};
+      var rows = obj.rows
+      delete obj.rows
+      return {results: rows, meta: obj}
+    })
+}
 
 /**
  * function:: HttpStorage.prototype.setHeader(name, value)
@@ -248,8 +242,8 @@ HttpStorage.prototype.query = function (queryObj) {
  * :param string value: The header value.
  */
 HttpStorage.prototype.setHeader = function (key, value) {
-    this.options.headers[key] = value;
-};
+  this.options.headers[key] = value
+}
 
 /*
  * Helper method to build an XHR request for a specified action and
@@ -262,18 +256,18 @@ HttpStorage.prototype.setHeader = function (key, value) {
  * :rtype: jqXHR
  */
 HttpStorage.prototype._apiRequest = function (action, obj) {
-    var id = obj && obj.id;
-    var url = this._urlFor(action, id);
-    var options = this._apiRequestOptions(action, obj);
+  var id = obj && obj.id
+  var url = this._urlFor(action, id)
+  var options = this._apiRequestOptions(action, obj)
 
-    var request = $.ajax(url, options);
+  var request = $.ajax(url, options)
 
     // Append the id and action to the request object
     // for use in the error callback.
-    request._id = id;
-    request._action = action;
-    return request;
-};
+  request._id = id
+  request._action = action
+  return request
+}
 
 /*
  * Builds an options object suitable for use in a jQuery.ajax() call.
@@ -285,50 +279,50 @@ HttpStorage.prototype._apiRequest = function (action, obj) {
  * :rtype: Object
  */
 HttpStorage.prototype._apiRequestOptions = function (action, obj) {
-    var method = this._methodFor(action);
-    var self = this;
+  var method = this._methodFor(action)
+  var self = this
 
-    var opts = {
-        type: method,
-        dataType: "json",
-        error: function () { self._onError.apply(self, arguments); },
-        headers: this.options.headers
-    };
+  var opts = {
+    type: method,
+    dataType: 'json',
+    error: function () { self._onError.apply(self, arguments) },
+    headers: this.options.headers
+  }
 
     // If emulateHTTP is enabled, we send a POST and put the real method in an
     // HTTP request header.
-    if (this.options.emulateHTTP && (method === 'PUT' || method === 'DELETE')) {
-        opts.headers = $.extend(opts.headers, {
-            'X-HTTP-Method-Override': method
-        });
-        opts.type = 'POST';
-    }
+  if (this.options.emulateHTTP && (method === 'PUT' || method === 'DELETE')) {
+    opts.headers = $.extend(opts.headers, {
+      'X-HTTP-Method-Override': method
+    })
+    opts.type = 'POST'
+  }
 
     // Don't JSONify obj if making search request.
-    if (action === "search") {
-        opts = $.extend(opts, {data: obj});
-        return opts;
-    }
+  if (action === 'search') {
+    opts = $.extend(opts, {data: obj})
+    return opts
+  }
 
-    var data = obj && JSON.stringify(obj);
+  var data = obj && JSON.stringify(obj)
 
     // If emulateJSON is enabled, we send a form request (the correct
     // contentType will be set automatically by jQuery), and put the
     // JSON-encoded payload in the "json" key.
-    if (this.options.emulateJSON) {
-        opts.data = {json: data};
-        if (this.options.emulateHTTP) {
-            opts.data._method = method;
-        }
-        return opts;
+  if (this.options.emulateJSON) {
+    opts.data = {json: data}
+    if (this.options.emulateHTTP) {
+      opts.data._method = method
     }
+    return opts
+  }
 
-    opts = $.extend(opts, {
-        data: data,
-        contentType: "application/json; charset=utf-8"
-    });
-    return opts;
-};
+  opts = $.extend(opts, {
+    data: data,
+    contentType: 'application/json; charset=utf-8'
+  })
+  return opts
+}
 
 /*
  * Builds the appropriate URL from the options for the action provided.
@@ -339,21 +333,21 @@ HttpStorage.prototype._apiRequestOptions = function (action, obj) {
  * :returns String: URL for the request.
  */
 HttpStorage.prototype._urlFor = function (action, id) {
-    if (typeof id === 'undefined' || id === null) {
-        id = '';
-    }
+  if (typeof id === 'undefined' || id === null) {
+    id = ''
+  }
 
-    var url = '';
-    if (typeof this.options.prefix !== 'undefined' &&
+  var url = ''
+  if (typeof this.options.prefix !== 'undefined' &&
         this.options.prefix !== null) {
-        url = this.options.prefix;
-    }
+    url = this.options.prefix
+  }
 
-    url += this.options.urls[action];
+  url += this.options.urls[action]
     // If there's an '{id}' in the URL, then fill in the ID.
-    url = url.replace(/\{id\}/, id);
-    return url;
-};
+  url = url.replace(/\{id\}/, id)
+  return url
+}
 
 /*
  * Maps an action to an HTTP method.
@@ -362,15 +356,15 @@ HttpStorage.prototype._urlFor = function (action, id) {
  * :returns String: Method for the request.
  */
 HttpStorage.prototype._methodFor = function (action) {
-    var table = {
-        create: 'POST',
-        update: 'PUT',
-        destroy: 'DELETE',
-        search: 'GET'
-    };
+  var table = {
+    create: 'POST',
+    update: 'PUT',
+    destroy: 'DELETE',
+    search: 'GET'
+  }
 
-    return table[action];
-};
+  return table[action]
+}
 
 /*
  * jQuery.ajax() callback. Displays an error notification to the user if
@@ -379,31 +373,31 @@ HttpStorage.prototype._methodFor = function (action) {
  * :param jqXHR: The jqXMLHttpRequest object.
  */
 HttpStorage.prototype._onError = function (xhr) {
-    if (typeof this.onError !== 'function') {
-        return;
-    }
+  if (typeof this.onError !== 'function') {
+    return
+  }
 
-    var message;
-    if (xhr.status === 400) {
-        message = _t("The annotation store did not understand the request! " +
-                     "(Error 400)");
-    } else if (xhr.status === 401) {
-        message = _t("You must be logged in to perform this operation! " +
-                     "(Error 401)");
-    } else if (xhr.status === 403) {
-        message = _t("You don't have permission to perform this operation! " +
-                     "(Error 403)");
-    } else if (xhr.status === 404) {
-        message = _t("Could not connect to the annotation store! " +
-                     "(Error 404)");
-    } else if (xhr.status === 500) {
-        message = _t("Internal error in annotation store! " +
-                     "(Error 500)");
-    } else {
-        message = _t("Unknown error while speaking to annotation store!");
-    }
-    this.onError(message, xhr);
-};
+  var message
+  if (xhr.status === 400) {
+    message = _t('The annotation store did not understand the request! ' +
+                     '(Error 400)')
+  } else if (xhr.status === 401) {
+    message = _t('You must be logged in to perform this operation! ' +
+                     '(Error 401)')
+  } else if (xhr.status === 403) {
+    message = _t("You don't have permission to perform this operation! " +
+                     '(Error 403)')
+  } else if (xhr.status === 404) {
+    message = _t('Could not connect to the annotation store! ' +
+                     '(Error 404)')
+  } else if (xhr.status === 500) {
+    message = _t('Internal error in annotation store! ' +
+                     '(Error 500)')
+  } else {
+    message = _t('Unknown error while speaking to annotation store!')
+  }
+  this.onError(message, xhr)
+}
 
 /**
  * attribute:: HttpStorage.options
@@ -422,7 +416,7 @@ HttpStorage.options = {
      *
      * **Default**: ``false``
      */
-    emulateHTTP: false,
+  emulateHTTP: false,
 
     /**
      * attribute:: HttpStorage.options.emulateJSON
@@ -432,7 +426,7 @@ HttpStorage.options = {
      *
      * **Default**: ``false``
      */
-    emulateJSON: false,
+  emulateJSON: false,
 
     /**
      * attribute:: HttpStorage.options.headers
@@ -442,16 +436,16 @@ HttpStorage.options = {
      *
      * **Default**: ``{}``
      */
-    headers: {},
+  headers: {},
 
     /**
      * attribute:: HttpStorage.options.onError
      *
      * Callback, called if a remote request throws an error.
      */
-    onError: function (message) {
-        console.error("API request failed: " + message);
-    },
+  onError: function (message) {
+    console.error('API request failed: ' + message)
+  },
 
     /**
      * attribute:: HttpStorage.options.prefix
@@ -461,7 +455,7 @@ HttpStorage.options = {
      *
      * **Default**: ``'/store'``
      */
-    prefix: '/store',
+  prefix: '/store',
 
     /**
      * attribute:: HttpStorage.options.urls
@@ -481,14 +475,13 @@ HttpStorage.options = {
      *          search: '/search'
      *      }
      */
-    urls: {
-        create: '/annotations',
-        update: '/annotations/{id}',
-        destroy: '/annotations/{id}',
-        search: '/search'
-    }
-};
-
+  urls: {
+    create: '/annotations',
+    update: '/annotations/{id}',
+    destroy: '/annotations/{id}',
+    search: '/search'
+  }
+}
 
 /**
  * class:: StorageAdapter(store, runHook)
@@ -500,9 +493,9 @@ HttpStorage.options = {
  * :param store: The Store implementation which manages persistence
  * :param Function runHook: A function which can be used to run lifecycle hooks
  */
-function StorageAdapter(store, runHook) {
-    this.store = store;
-    this.runHook = runHook;
+function StorageAdapter (store, runHook) {
+  this.store = store
+  this.runHook = runHook
 }
 
 /**
@@ -530,16 +523,16 @@ function StorageAdapter(store, runHook) {
  * :returns Promise: Resolves to annotation object when stored.
  */
 StorageAdapter.prototype.create = function (obj) {
-    if (typeof obj === 'undefined' || obj === null) {
-        obj = {};
-    }
-    return this._cycle(
+  if (typeof obj === 'undefined' || obj === null) {
+    obj = {}
+  }
+  return this._cycle(
         obj,
         'create',
         'beforeAnnotationCreated',
         'annotationCreated'
-    );
-};
+    )
+}
 
 /**
  * function:: StorageAdapter.prototype.update(obj)
@@ -568,16 +561,16 @@ StorageAdapter.prototype.create = function (obj) {
  * :returns Promise: Resolves to annotation object when stored.
  */
 StorageAdapter.prototype.update = function (obj) {
-    if (typeof obj.id === 'undefined' || obj.id === null) {
-        throw new TypeError("annotation must have an id for update()");
-    }
-    return this._cycle(
+  if (typeof obj.id === 'undefined' || obj.id === null) {
+    throw new TypeError('annotation must have an id for update()')
+  }
+  return this._cycle(
         obj,
         'update',
         'beforeAnnotationUpdated',
         'annotationUpdated'
-    );
-};
+    )
+}
 
 /**
  * function:: StorageAdapter.prototype.delete(obj)
@@ -595,16 +588,16 @@ StorageAdapter.prototype.update = function (obj) {
  * :returns Promise: Resolves to annotation object when deleted.
  */
 StorageAdapter.prototype['delete'] = function (obj) {
-    if (typeof obj.id === 'undefined' || obj.id === null) {
-        throw new TypeError("annotation must have an id for delete()");
-    }
-    return this._cycle(
+  if (typeof obj.id === 'undefined' || obj.id === null) {
+    throw new TypeError('annotation must have an id for delete()')
+  }
+  return this._cycle(
         obj,
         'delete',
         'beforeAnnotationDeleted',
         'annotationDeleted'
-    );
-};
+    )
+}
 
 /**
  * function:: StorageAdapter.prototype.query(query)
@@ -617,8 +610,8 @@ StorageAdapter.prototype['delete'] = function (obj) {
  * :returns Promise: Resolves to the store return value.
  */
 StorageAdapter.prototype.query = function (query) {
-    return Promise.resolve(this.store.query(query));
-};
+  return Promise.resolve(this.store.query(query))
+}
 
 /**
  * function:: StorageAdapter.prototype.load(query)
@@ -633,12 +626,12 @@ StorageAdapter.prototype.query = function (query) {
  * :returns Promise: Resolves when loading is complete.
  */
 StorageAdapter.prototype.load = function (query) {
-    var self = this;
-    return this.query(query)
+  var self = this
+  return this.query(query)
         .then(function (data) {
-            self.runHook('annotationsLoaded', [data.results]);
-        });
-};
+          self.runHook('annotationsLoaded', [data.results])
+        })
+}
 
 // Cycle a store event, keeping track of the annotation object and updating it
 // as necessary.
@@ -648,32 +641,32 @@ StorageAdapter.prototype._cycle = function (
     beforeEvent,
     afterEvent
 ) {
-    var self = this;
-    return this.runHook(beforeEvent, [obj])
+  var self = this
+  return this.runHook(beforeEvent, [obj])
         .then(function () {
-            var safeCopy = $.extend(true, {}, obj);
-            delete safeCopy._local;
+          var safeCopy = $.extend(true, {}, obj)
+          delete safeCopy._local
 
             // We use Promise.resolve() to coerce the result of the store
             // function, which can be either a value or a promise, to a promise.
-            var result = self.store[storeFunc](safeCopy);
-            return Promise.resolve(result);
+          var result = self.store[storeFunc](safeCopy)
+          return Promise.resolve(result)
         })
         .then(function (ret) {
             // Empty obj without changing identity
-            for (var k in obj) {
-                if (obj.hasOwnProperty(k)) {
-                    if (k !== '_local') {
-                        delete obj[k];
-                    }
-                }
+          for (var k in obj) {
+            if (obj.hasOwnProperty(k)) {
+              if (k !== '_local') {
+                delete obj[k]
+              }
             }
+          }
 
             // Update with store return value
-            $.extend(obj, ret);
-            self.runHook(afterEvent, [obj]);
-            return obj;
-        });
-};
+          $.extend(obj, ret)
+          self.runHook(afterEvent, [obj])
+          return obj
+        })
+}
 
-exports.StorageAdapter = StorageAdapter;
+exports.StorageAdapter = StorageAdapter

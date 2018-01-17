@@ -1,10 +1,8 @@
-/*package annotator.identity */
+/* package annotator.identity */
 
-"use strict";
+'use strict'
 
-
-var SimpleIdentityPolicy;
-
+var SimpleIdentityPolicy
 
 /**
  * function:: simple()
@@ -12,19 +10,18 @@ var SimpleIdentityPolicy;
  * A module that configures and registers an instance of
  * :class:`annotator.identity.SimpleIdentityPolicy`.
  */
-exports.simple = function simple() {
-    var identity = new SimpleIdentityPolicy();
+exports.simple = function simple () {
+  var identity = new SimpleIdentityPolicy()
 
-    return {
-        configure: function (registry) {
-            registry.registerUtility(identity, 'identityPolicy');
-        },
-        beforeAnnotationCreated: function (annotation) {
-            annotation.user = identity.who();
-        }
-    };
-};
-
+  return {
+    configure: function (registry) {
+      registry.registerUtility(identity, 'identityPolicy')
+    },
+    beforeAnnotationCreated: function (annotation) {
+      annotation.user = identity.who()
+    }
+  }
+}
 
 /**
  * class:: SimpleIdentityPolicy
@@ -32,7 +29,7 @@ exports.simple = function simple() {
  * A simple identity policy that considers the identity to be an opaque
  * identifier.
  */
-SimpleIdentityPolicy = function SimpleIdentityPolicy() {
+SimpleIdentityPolicy = function SimpleIdentityPolicy () {
     /**
      * data:: SimpleIdentityPolicy.identity
      *
@@ -44,10 +41,9 @@ SimpleIdentityPolicy = function SimpleIdentityPolicy() {
      *
      *     app.ident.identity = 'bob';
      */
-    this.identity = null;
-};
-exports.SimpleIdentityPolicy = SimpleIdentityPolicy;
-
+  this.identity = null
+}
+exports.SimpleIdentityPolicy = SimpleIdentityPolicy
 
 /**
  * function:: SimpleIdentityPolicy.prototype.who()
@@ -55,5 +51,5 @@ exports.SimpleIdentityPolicy = SimpleIdentityPolicy;
  * Returns the current user identity.
  */
 SimpleIdentityPolicy.prototype.who = function () {
-    return this.identity;
-};
+  return this.identity
+}

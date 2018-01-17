@@ -1,84 +1,83 @@
-"use strict";
+'use strict'
 
-var util = require('../util');
+var util = require('../util')
 
-var $ = util.$;
-var _t = util.gettext;
+var $ = util.$
+var _t = util.gettext
 
-var NS = 'annotator-filter';
-
+var NS = 'annotator-filter'
 
 // Public: Creates a new instance of the Filter.
 //
 // options - An Object literal of options.
 //
 // Returns a new instance of the Filter.
-var Filter = exports.Filter = function Filter(options) {
-    this.options = $.extend(true, {}, Filter.options, options);
-    this.classes = $.extend(true, {}, Filter.classes);
-    this.element = $(Filter.html.element).appendTo(this.options.appendTo);
+var Filter = exports.Filter = function Filter (options) {
+  this.options = $.extend(true, {}, Filter.options, options)
+  this.classes = $.extend(true, {}, Filter.classes)
+  this.element = $(Filter.html.element).appendTo(this.options.appendTo)
 
-    this.filter  = $(Filter.html.filter);
-    this.filters = [];
-    this.current  = 0;
+  this.filter = $(Filter.html.filter)
+  this.filters = []
+  this.current = 0
 
-    for (var i = 0, len = this.options.filters.length; i < len; i++) {
-        var filter = this.options.filters[i];
-        this.addFilter(filter);
-    }
+  for (var i = 0, len = this.options.filters.length; i < len; i++) {
+    var filter = this.options.filters[i]
+    this.addFilter(filter)
+  }
 
-    this.updateHighlights();
+  this.updateHighlights()
 
-    var filterInput = '.annotator-filter-property input',
-        self = this;
-    this.element
-        .on("focus." + NS, filterInput, function (e) {
-            self._onFilterFocus(e);
+  var filterInput = '.annotator-filter-property input',
+    self = this
+  this.element
+        .on('focus.' + NS, filterInput, function (e) {
+          self._onFilterFocus(e)
         })
-        .on("blur." + NS, filterInput, function (e) {
-            self._onFilterBlur(e);
+        .on('blur.' + NS, filterInput, function (e) {
+          self._onFilterBlur(e)
         })
-        .on("keyup." + NS, filterInput, function (e) {
-            self._onFilterKeyup(e);
+        .on('keyup.' + NS, filterInput, function (e) {
+          self._onFilterKeyup(e)
         })
-        .on("click." + NS, '.annotator-filter-previous', function (e) {
-            self._onPreviousClick(e);
+        .on('click.' + NS, '.annotator-filter-previous', function (e) {
+          self._onPreviousClick(e)
         })
-        .on("click." + NS, '.annotator-filter-next', function (e) {
-            self._onNextClick(e);
+        .on('click.' + NS, '.annotator-filter-next', function (e) {
+          self._onNextClick(e)
         })
-        .on("click." + NS, '.annotator-filter-clear', function (e) {
-            self._onClearClick(e);
-        });
+        .on('click.' + NS, '.annotator-filter-clear', function (e) {
+          self._onClearClick(e)
+        })
 
-    this._insertSpacer();
+  this._insertSpacer()
 
-    if (this.options.addAnnotationFilter) {
-        this.addFilter({label: _t('Annotation'), property: 'text'});
-    }
-};
+  if (this.options.addAnnotationFilter) {
+    this.addFilter({label: _t('Annotation'), property: 'text'})
+  }
+}
 
 // Public: remove the filter instance and unbind events.
 //
 // Returns nothing.
 Filter.prototype.destroy = function () {
-    var html = $('html'),
-        currentMargin = parseInt(html.css('padding-top'), 10) || 0;
-    html.css('padding-top', currentMargin - this.element.outerHeight());
-    this.element.off("." + NS);
-    this.element.remove();
-};
+  var html = $('html'),
+    currentMargin = parseInt(html.css('padding-top'), 10) || 0
+  html.css('padding-top', currentMargin - this.element.outerHeight())
+  this.element.off('.' + NS)
+  this.element.remove()
+}
 
 // Adds margin to the current document to ensure that the annotation toolbar
 // doesn't cover the page when not scrolled.
 //
 // Returns itself
 Filter.prototype._insertSpacer = function () {
-    var html = $('html'),
-        currentMargin = parseInt(html.css('padding-top'), 10) || 0;
-    html.css('padding-top', currentMargin + this.element.outerHeight());
-    return this;
-};
+  var html = $('html'),
+    currentMargin = parseInt(html.css('padding-top'), 10) || 0
+  html.css('padding-top', currentMargin + this.element.outerHeight())
+  return this
+}
 
 // Public: Adds a filter to the toolbar. The filter must have both a label
 // and a property of an annotation object to filter on.
@@ -100,43 +99,43 @@ Filter.prototype._insertSpacer = function () {
 //
 // Returns itself to allow chaining.
 Filter.prototype.addFilter = function (options) {
-    var filter = $.extend({
-        label: '',
-        property: '',
-        isFiltered: this.options.isFiltered
-    }, options);
+  var filter = $.extend({
+    label: '',
+    property: '',
+    isFiltered: this.options.isFiltered
+  }, options)
 
     // Skip if a filter for this property has been loaded.
-    var hasFilterForProp = false;
-    for (var i = 0, len = this.filters.length; i < len; i++) {
-        var f = this.filters[i];
-        if (f.property === filter.property) {
-            hasFilterForProp = true;
-            break;
-        }
+  var hasFilterForProp = false
+  for (var i = 0, len = this.filters.length; i < len; i++) {
+    var f = this.filters[i]
+    if (f.property === filter.property) {
+      hasFilterForProp = true
+      break
     }
-    if (!hasFilterForProp) {
-        filter.id = 'annotator-filter-' + filter.property;
-        filter.annotations = [];
-        filter.element = this.filter.clone().appendTo(this.element);
-        filter.element.find('label')
+  }
+  if (!hasFilterForProp) {
+    filter.id = 'annotator-filter-' + filter.property
+    filter.annotations = []
+    filter.element = this.filter.clone().appendTo(this.element)
+    filter.element.find('label')
             .html(filter.label)
-            .attr('for', filter.id);
-        filter.element.find('input')
+            .attr('for', filter.id)
+    filter.element.find('input')
             .attr({
-                id: filter.id,
-                placeholder: _t('Filter by ') + filter.label + '\u2026'
-            });
-        filter.element.find('button').hide();
+              id: filter.id,
+              placeholder: _t('Filter by ') + filter.label + '\u2026'
+            })
+    filter.element.find('button').hide()
 
         // Add the filter to the elements data store.
-        filter.element.data('filter', filter);
+    filter.element.data('filter', filter)
 
-        this.filters.push(filter);
-    }
+    this.filters.push(filter)
+  }
 
-    return this;
-};
+  return this
+}
 
 // Public: Updates the filter.annotations property. Then updates the state
 // of the elements in the DOM. Calls the filter.isFiltered() method to
@@ -150,32 +149,32 @@ Filter.prototype.addFilter = function (options) {
 //
 // Returns itself for chaining
 Filter.prototype.updateFilter = function (filter) {
-    filter.annotations = [];
+  filter.annotations = []
 
-    this.updateHighlights();
-    this.resetHighlights();
-    var input = $.trim(filter.element.find('input').val());
+  this.updateHighlights()
+  this.resetHighlights()
+  var input = $.trim(filter.element.find('input').val())
 
-    if (!input) {
-        return;
+  if (!input) {
+    return
+  }
+
+  var annotations = this.highlights.map(function () {
+    return $(this).data('annotation')
+  })
+  annotations = $.makeArray(annotations)
+
+  for (var i = 0, len = annotations.length; i < len; i++) {
+    var annotation = annotations[i],
+      property = annotation[filter.property]
+
+    if (filter.isFiltered(input, property)) {
+      filter.annotations.push(annotation)
     }
+  }
 
-    var annotations = this.highlights.map(function () {
-        return $(this).data('annotation');
-    });
-    annotations = $.makeArray(annotations);
-
-    for (var i = 0, len = annotations.length; i < len; i++) {
-        var annotation = annotations[i],
-            property = annotation[filter.property];
-
-        if (filter.isFiltered(input, property)) {
-            filter.annotations.push(annotation);
-        }
-    }
-
-    this.filterHighlights();
-};
+  this.filterHighlights()
+}
 
 // Public: Updates the this.highlights property with the latest highlight
 // elements in the DOM.
@@ -183,62 +182,62 @@ Filter.prototype.updateFilter = function (filter) {
 // Returns a jQuery collection of the highlight elements.
 Filter.prototype.updateHighlights = function () {
     // Ignore any hidden highlights.
-    this.highlights = $(this.options.filterElement)
-        .find('.annotator-hl:visible');
-    this.filtered = this.highlights.not(this.classes.hl.hide);
-};
+  this.highlights = $(this.options.filterElement)
+        .find('.annotator-hl:visible')
+  this.filtered = this.highlights.not(this.classes.hl.hide)
+}
 
 // Public: Runs through each of the filters and removes all highlights not
 // currently in scope.
 //
 // Returns itself for chaining.
 Filter.prototype.filterHighlights = function () {
-    var activeFilters = $.grep(this.filters, function (filter) {
-        return Boolean(filter.annotations.length);
-    });
+  var activeFilters = $.grep(this.filters, function (filter) {
+    return Boolean(filter.annotations.length)
+  })
 
-    var filtered = [];
-    if (activeFilters.length > 0) {
-        filtered = activeFilters[0].annotations;
-    }
-    if (activeFilters.length > 1) {
+  var filtered = []
+  if (activeFilters.length > 0) {
+    filtered = activeFilters[0].annotations
+  }
+  if (activeFilters.length > 1) {
         // If there are more than one filter then only annotations matched in
         // every filter should remain.
-        var annotations = [];
+    var annotations = []
 
-        $.each(activeFilters, function () {
-            $.merge(annotations, this.annotations);
-        });
+    $.each(activeFilters, function () {
+      $.merge(annotations, this.annotations)
+    })
 
-        var uniques = [];
-        filtered = [];
-        $.each(annotations, function () {
-            if ($.inArray(this, uniques) === -1) {
-                uniques.push(this);
-            } else {
-                filtered.push(this);
-            }
-        });
-    }
+    var uniques = []
+    filtered = []
+    $.each(annotations, function () {
+      if ($.inArray(this, uniques) === -1) {
+        uniques.push(this)
+      } else {
+        filtered.push(this)
+      }
+    })
+  }
 
-    var highlights = this.highlights;
-    for (var i = 0, len = filtered.length; i < len; i++) {
-        highlights = highlights.not(filtered[i]._local.highlights);
-    }
-    highlights.addClass(this.classes.hl.hide);
-    this.filtered = this.highlights.not(this.classes.hl.hide);
+  var highlights = this.highlights
+  for (var i = 0, len = filtered.length; i < len; i++) {
+    highlights = highlights.not(filtered[i]._local.highlights)
+  }
+  highlights.addClass(this.classes.hl.hide)
+  this.filtered = this.highlights.not(this.classes.hl.hide)
 
-    return this;
-};
+  return this
+}
 
 // Public: Removes hidden class from all annotations.
 //
 // Returns itself for chaining.
 Filter.prototype.resetHighlights = function () {
-    this.highlights.removeClass(this.classes.hl.hide);
-    this.filtered = this.highlights;
-    return this;
-};
+  this.highlights.removeClass(this.classes.hl.hide)
+  this.filtered = this.highlights
+  return this
+}
 
 // Updates the filter field on focus.
 //
@@ -246,10 +245,10 @@ Filter.prototype.resetHighlights = function () {
 //
 // Returns nothing
 Filter.prototype._onFilterFocus = function (event) {
-    var input = $(event.target);
-    input.parent().addClass(this.classes.active);
-    input.next('button').show();
-};
+  var input = $(event.target)
+  input.parent().addClass(this.classes.active)
+  input.next('button').show()
+}
 
 // Updates the filter field on blur.
 //
@@ -257,12 +256,12 @@ Filter.prototype._onFilterFocus = function (event) {
 //
 // Returns nothing.
 Filter.prototype._onFilterBlur = function (event) {
-    if (!event.target.value) {
-        var input = $(event.target);
-        input.parent().removeClass(this.classes.active);
-        input.next('button').hide();
-    }
-};
+  if (!event.target.value) {
+    var input = $(event.target)
+    input.parent().removeClass(this.classes.active)
+    input.next('button').hide()
+  }
+}
 
 // Updates the filter based on the id of the filter element.
 //
@@ -270,11 +269,11 @@ Filter.prototype._onFilterBlur = function (event) {
 //
 // Returns nothing.
 Filter.prototype._onFilterKeyup = function (event) {
-    var filter = $(event.target).parent().data('filter');
-    if (filter) {
-        this.updateFilter(filter);
-    }
-};
+  var filter = $(event.target).parent().data('filter')
+  if (filter) {
+    this.updateFilter(filter)
+  }
+}
 
 // Locates the next/previous highlighted element in this.highlights from the
 // current one or goes to the very first/last element respectively.
@@ -283,40 +282,40 @@ Filter.prototype._onFilterKeyup = function (event) {
 //
 // Returns itself.
 Filter.prototype._findNextHighlight = function (previous) {
-    if (this.highlights.length === 0) {
-        return this;
-    }
+  if (this.highlights.length === 0) {
+    return this
+  }
 
-    var offset = -1,
-        resetOffset = 0,
-        operator = 'gt';
+  var offset = -1,
+    resetOffset = 0,
+    operator = 'gt'
 
-    if (previous) {
-        offset = 0;
-        resetOffset = -1;
-        operator = 'lt';
-    }
+  if (previous) {
+    offset = 0
+    resetOffset = -1
+    operator = 'lt'
+  }
 
-    var active = this.highlights.not('.' + this.classes.hl.hide),
-        current = active.filter('.' + this.classes.hl.active);
+  var active = this.highlights.not('.' + this.classes.hl.hide),
+    current = active.filter('.' + this.classes.hl.active)
 
-    if (current.length === 0) {
-        current = active.eq(offset);
-    }
+  if (current.length === 0) {
+    current = active.eq(offset)
+  }
 
-    var annotation = current.data('annotation');
+  var annotation = current.data('annotation')
 
-    var index = active.index(current[0]),
-        next = active.filter(":" + operator + "(" + index + ")")
+  var index = active.index(current[0]),
+    next = active.filter(':' + operator + '(' + index + ')')
             .not(annotation._local.highlights)
-            .eq(resetOffset);
+            .eq(resetOffset)
 
-    if (next.length === 0) {
-        next = active.eq(resetOffset);
-    }
+  if (next.length === 0) {
+    next = active.eq(resetOffset)
+  }
 
-    this._scrollToHighlight(next.data('annotation')._local.highlights);
-};
+  this._scrollToHighlight(next.data('annotation')._local.highlights)
+}
 
 // Locates the next highlighted element in this.highlights from the current one
 // or goes to the very first element.
@@ -325,8 +324,8 @@ Filter.prototype._findNextHighlight = function (previous) {
 //
 // Returns nothing
 Filter.prototype._onNextClick = function () {
-    this._findNextHighlight();
-};
+  this._findNextHighlight()
+}
 
 // Locates the previous highlighted element in this.highlights from the current
 // one or goes to the very last element.
@@ -335,8 +334,8 @@ Filter.prototype._onNextClick = function () {
 //
 // Returns nothing
 Filter.prototype._onPreviousClick = function () {
-    this._findNextHighlight(true);
-};
+  this._findNextHighlight(true)
+}
 
 // Scrolls to the highlight provided. An adds an active class to it.
 //
@@ -345,15 +344,15 @@ Filter.prototype._onPreviousClick = function () {
 //
 // Returns nothing.
 Filter.prototype._scrollToHighlight = function (highlight) {
-    highlight = $(highlight);
+  highlight = $(highlight)
 
-    this.highlights.removeClass(this.classes.hl.active);
-    highlight.addClass(this.classes.hl.active);
+  this.highlights.removeClass(this.classes.hl.active)
+  highlight.addClass(this.classes.hl.active)
 
-    $('html, body').animate({
-        scrollTop: highlight.offset().top - (this.element.height() + 20)
-    }, 150);
-};
+  $('html, body').animate({
+    scrollTop: highlight.offset().top - (this.element.height() + 20)
+  }, 150)
+}
 
 // Clears the relevant input when the clear button is clicked.
 //
@@ -361,58 +360,58 @@ Filter.prototype._scrollToHighlight = function (highlight) {
 //
 // Returns nothing.
 Filter.prototype._onClearClick = function (event) {
-    $(event.target).prev('input').val('').keyup().blur();
-};
+  $(event.target).prev('input').val('').keyup().blur()
+}
 
 // Common classes used to change filter state.
 Filter.classes = {
-    active: 'annotator-filter-active',
-    hl: {
-        hide: 'annotator-hl-filtered',
-        active: 'annotator-hl-active'
-    }
-};
+  active: 'annotator-filter-active',
+  hl: {
+    hide: 'annotator-hl-filtered',
+    active: 'annotator-hl-active'
+  }
+}
 
 // HTML templates for the filter UI.
 Filter.html = {
-    element: [
-        '<div class="annotator-filter">',
-        '  <strong>' + _t('Navigate:') + '</strong>',
-        '  <span class="annotator-filter-navigation">',
-        '    <button type="button"',
-        '            class="annotator-filter-previous">' +
+  element: [
+    '<div class="annotator-filter">',
+    '  <strong>' + _t('Navigate:') + '</strong>',
+    '  <span class="annotator-filter-navigation">',
+    '    <button type="button"',
+    '            class="annotator-filter-previous">' +
             _t('Previous') +
             '</button>',
-        '    <button type="button"',
-        '            class="annotator-filter-next">' + _t('Next') + '</button>',
-        '  </span>',
-        '  <strong>' + _t('Filter by:') + '</strong>',
-        '</div>'
-    ].join('\n'),
+    '    <button type="button"',
+    '            class="annotator-filter-next">' + _t('Next') + '</button>',
+    '  </span>',
+    '  <strong>' + _t('Filter by:') + '</strong>',
+    '</div>'
+  ].join('\n'),
 
-    filter: [
-        '<span class="annotator-filter-property">',
-        '  <label></label>',
-        '  <input/>',
-        '  <button type="button"',
-        '          class="annotator-filter-clear">' + _t('Clear') + '</button>',
-        '</span>'
-    ].join('\n')
-};
+  filter: [
+    '<span class="annotator-filter-property">',
+    '  <label></label>',
+    '  <input/>',
+    '  <button type="button"',
+    '          class="annotator-filter-clear">' + _t('Clear') + '</button>',
+    '</span>'
+  ].join('\n')
+}
 
 // Default options for Filter.
 Filter.options = {
     // A CSS selector or Element to append the filter toolbar to.
-    appendTo: 'body',
+  appendTo: 'body',
 
     // A CSS selector or Element to find and filter highlights in.
-    filterElement: 'body',
+  filterElement: 'body',
 
     // An array of filters can be provided on initialisation.
-    filters: [],
+  filters: [],
 
     // Adds a default filter on annotations.
-    addAnnotationFilter: true,
+  addAnnotationFilter: true,
 
     // Public: Determines if the property is contained within the provided
     // annotation property. Default is to split the string on spaces and only
@@ -431,34 +430,33 @@ Filter.options = {
     //   # => Returns false
     //
     // Returns an Array of keyword Strings.
-    isFiltered: function (input, property) {
-        if (!(input && property)) {
-            return false;
-        }
-
-        var keywords = input.split(/\s+/);
-        for (var i = 0, len = keywords.length; i < len; i++) {
-            if (property.indexOf(keywords[i]) === -1) {
-                return false;
-            }
-        }
-
-        return true;
+  isFiltered: function (input, property) {
+    if (!(input && property)) {
+      return false
     }
-};
 
+    var keywords = input.split(/\s+/)
+    for (var i = 0, len = keywords.length; i < len; i++) {
+      if (property.indexOf(keywords[i]) === -1) {
+        return false
+      }
+    }
+
+    return true
+  }
+}
 
 // standalone is a module that uses the Filter component to display a filter bar
 // to allow browsing and searching of annotations on the current page.
 exports.standalone = function (options) {
-    var widget = new exports.Filter(options);
+  var widget = new exports.Filter(options)
 
-    return {
-        destroy: function () { widget.destroy(); },
+  return {
+    destroy: function () { widget.destroy() },
 
-        annotationsLoaded: function () { widget.updateHighlights(); },
-        annotationCreated: function () { widget.updateHighlights(); },
-        annotationUpdated: function () { widget.updateHighlights(); },
-        annotationDeleted: function () { widget.updateHighlights(); }
-    };
-};
+    annotationsLoaded: function () { widget.updateHighlights() },
+    annotationCreated: function () { widget.updateHighlights() },
+    annotationUpdated: function () { widget.updateHighlights() },
+    annotationDeleted: function () { widget.updateHighlights() }
+  }
+}

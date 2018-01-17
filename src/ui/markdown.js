@@ -1,10 +1,9 @@
-/*package annotator.ui.markdown */
-"use strict";
+/* package annotator.ui.markdown */
+'use strict'
 
-var util = require('../util');
+var util = require('../util')
 
-var _t = util.gettext;
-
+var _t = util.gettext
 
 /**
  * function:: render(annotation)
@@ -15,20 +14,19 @@ var _t = util.gettext;
  * :returns: Rendered HTML.
  * :rtype: String
  */
-var render = exports.render = function render(annotation) {
-    var convert = util.escapeHtml;
+var render = exports.render = function render (annotation) {
+  var convert = util.escapeHtml
 
-    if (global.showdown && typeof global.showdown.Converter === 'function') {
-        convert = new global.showdown.Converter().makeHtml;
-    }
+  if (global.showdown && typeof global.showdown.Converter === 'function') {
+    convert = new global.showdown.Converter().makeHtml
+  }
 
-    if (annotation.text) {
-        return convert(annotation.text);
-    } else {
-        return "<i>" + _t('No comment') + "</i>";
-    }
-};
-
+  if (annotation.text) {
+    return convert(annotation.text)
+  } else {
+    return '<i>' + _t('No comment') + '</i>'
+  }
+}
 
 /**
  * function:: viewerExtension(viewer)
@@ -46,11 +44,11 @@ var render = exports.render = function render(annotation) {
  *         viewerExtensions: [annotator.ui.markdown.viewerExtension]
  *     });
  */
-exports.viewerExtension = function viewerExtension(viewer) {
-    if (!global.showdown || typeof global.showdown.Converter !== 'function') {
-        console.warn(_t("To use the Markdown plugin, you must " +
-                        "include Showdown into the page first."));
-    }
+exports.viewerExtension = function viewerExtension (viewer) {
+  if (!global.showdown || typeof global.showdown.Converter !== 'function') {
+    console.warn(_t('To use the Markdown plugin, you must ' +
+                        'include Showdown into the page first.'))
+  }
 
-    viewer.setRenderer(render);
-};
+  viewer.setRenderer(render)
+}

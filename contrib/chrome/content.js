@@ -12,7 +12,7 @@ chrome.extension.onRequest.addListener(
         $(document.body).annotator().annotator('setupPlugins')
         sendResponse({ok: true})
       } else {
-        sendResponse({error: new TypeError("not implemented: " + command)})
+        sendResponse({error: new TypeError('not implemented: ' + command)})
       }
     }
   }
