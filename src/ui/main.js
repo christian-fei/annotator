@@ -11,17 +11,6 @@ var viewer = require('./viewer')
 
 var _t = util.gettext
 
-// trim strips whitespace from either end of a string.
-//
-// This usually exists in native code, but not in IE8.
-function trim (s) {
-  if (typeof String.prototype.trim === 'function') {
-    return String.prototype.trim.call(s)
-  } else {
-    return s.replace(/^[\s\xA0]+|[\s\xA0]+$/g, '')
-  }
-}
-
 // annotationFactory returns a function that can be used to construct an
 // annotation from a list of selected ranges.
 function annotationFactory (contextEl, ignoreSelector) {
@@ -31,7 +20,7 @@ function annotationFactory (contextEl, ignoreSelector) {
 
     for (var i = 0, len = ranges.length; i < len; i++) {
       var r = ranges[i]
-      text.push(trim(r.text()))
+      text.push(r.text().trim())
       serializedRanges.push(r.serialize(contextEl, ignoreSelector))
     }
 
@@ -39,57 +28,6 @@ function annotationFactory (contextEl, ignoreSelector) {
       ranges: serializedRanges
     }
   }
-}
-
-// maxZIndex returns the maximum z-index of all elements in the provided set.
-function maxZIndex (elements) {
-  var max = -1
-  for (var i = 0, len = elements.length; i < len; i++) {
-    var $el = util.$(elements[i])
-    if ($el.css('position') !== 'static') {
-            // Use parseFloat since we may get scientific notation for large
-            // values.
-      var zIndex = parseFloat($el.css('z-index'))
-      if (zIndex > max) {
-        max = zIndex
-      }
-    }
-  }
-  return max
-}
-
-// Helper function to inject CSS into the page that ensures Annotator elements
-// are displayed with the highest z-index.
-function injectDynamicStyle () {
-  util.$('#annotator-dynamic-style').remove()
-
-  var sel = '*' +
-              ':not(annotator-adder)' +
-              ':not(annotator-outer)' +
-              ':not(annotator-notice)' +
-              ':not(annotator-filter)'
-
-    // use the maximum z-index in the page
-  var max = maxZIndex(util.$(global.document.body).find(sel).get())
-
-    // but don't go smaller than 1010, because this isn't bulletproof --
-    // dynamic elements in the page (notifications, dialogs, etc.) may well
-    // have high z-indices that we can't catch using the above method.
-  max = Math.max(max, 1000)
-
-  var rules = [
-    '.annotator-adder, .annotator-outer, .annotator-notice {',
-    '  z-index: ' + (max + 20) + ';',
-    '}',
-    '.annotator-filter {',
-    '  z-index: ' + (max + 10) + ';',
-    '}'
-  ].join('\n')
-
-  util.$('<style>' + rules + '</style>')
-        .attr('id', 'annotator-dynamic-style')
-        .attr('type', 'text/css')
-        .appendTo('head')
 }
 
 // Helper function to remove dynamic stylesheets
@@ -210,7 +148,7 @@ function main (options) {
   var makeAnnotation = annotationFactory(options.element, '.annotator-hl')
 
     // Object to hold local state
-  var s = {
+  var state = {
     interactionPoint: null
   }
 
@@ -218,40 +156,38 @@ function main (options) {
     var ident = app.registry.getUtility('identityPolicy')
     var authz = app.registry.getUtility('authorizationPolicy')
 
-    s.adder = new adder.Adder({
+    state.adder = new adder.Adder({
       onCreate: function (ann) {
         app.annotations.create(ann)
       }
     })
-    s.adder.attach()
+    state.adder.attach()
 
-    s.editor = new editor.Editor({
+    state.editor = new editor.Editor({
       extensions: options.editorExtensions
     })
-    s.editor.attach()
+    state.editor.attach()
 
-    addPermissionsCheckboxes(s.editor, ident, authz)
+    addPermissionsCheckboxes(state.editor, ident, authz)
 
-    s.highlighter = new highlighter.Highlighter(options.element)
+    state.highlighter = new highlighter.Highlighter(options.element)
 
-    s.textselector = new textselector.TextSelector(options.element, {
+    state.textselector = new textselector.TextSelector(options.element, {
       onSelection: function (ranges, event) {
         if (ranges.length > 0) {
-          debugger
-
           var annotation = makeAnnotation(ranges)
-          s.interactionPoint = util.mousePosition(event)
-          s.adder.load(annotation, s.interactionPoint)
+          state.interactionPoint = util.mousePosition(event)
+          state.adder.load(annotation, state.interactionPoint)
         } else {
-          s.adder.hide()
+          state.adder.hide()
         }
       }
     })
 
-    s.viewer = new viewer.Viewer({
+    state.viewer = new viewer.Viewer({
       onEdit: function (ann) {
                 // Copy the interaction point from the shown viewer:
-        s.interactionPoint = util.$(s.viewer.element)
+        state.interactionPoint = util.$(state.viewer.element)
                                          .css(['top', 'left'])
 
         app.annotations.update(ann)
@@ -268,38 +204,36 @@ function main (options) {
       autoViewHighlights: options.element,
       extensions: options.viewerExtensions
     })
-    s.viewer.attach()
-
-    injectDynamicStyle()
+    state.viewer.attach()
   }
 
   return {
     start: start,
 
     destroy: function () {
-      s.adder.destroy()
-      s.editor.destroy()
-      s.highlighter.destroy()
-      s.textselector.destroy()
-      s.viewer.destroy()
+      state.adder.destroy()
+      state.editor.destroy()
+      state.highlighter.destroy()
+      state.textselector.destroy()
+      state.viewer.destroy()
       removeDynamicStyle()
     },
 
-    annotationsLoaded: function (anns) { s.highlighter.drawAll(anns) },
-    annotationCreated: function (ann) { s.highlighter.draw(ann) },
-    annotationDeleted: function (ann) { s.highlighter.undraw(ann) },
-    annotationUpdated: function (ann) { s.highlighter.redraw(ann) },
+    annotationsLoaded: function (anns) { state.highlighter.drawAll(anns) },
+    annotationCreated: function (ann) { state.highlighter.draw(ann) },
+    annotationDeleted: function (ann) { state.highlighter.undraw(ann) },
+    annotationUpdated: function (ann) { state.highlighter.redraw(ann) },
 
     beforeAnnotationCreated: function (annotation) {
             // Editor#load returns a promise that is resolved if editing
             // completes, and rejected if editing is cancelled. We return it
             // here to "stall" the annotation process until the editing is
             // done.
-      return s.editor.load(annotation, s.interactionPoint)
+      return state.editor.load(annotation, state.interactionPoint)
     },
 
     beforeAnnotationUpdated: function (annotation) {
-      return s.editor.load(annotation, s.interactionPoint)
+      return state.editor.load(annotation, state.interactionPoint)
     }
   }
 }
