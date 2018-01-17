@@ -6,8 +6,6 @@ var util = require('../util')
 
 var $ = util.$
 
-var TEXTSELECTOR_NS = 'annotator-textselector'
-
 // isAnnotator determines if the provided element is part of Annotator. Useful
 // for ignoring mouse actions on the annotator elements.
 //
@@ -32,7 +30,7 @@ function TextSelector (element, options) {
     this.document = this.element.ownerDocument
 
     $(this.document.body)
-            .on('mouseup.' + TEXTSELECTOR_NS, function (e) {
+            .on('mouseup', function (e) {
               self._checkForEndSelection(e)
             })
   } else {
@@ -44,9 +42,7 @@ function TextSelector (element, options) {
 }
 
 TextSelector.prototype.destroy = function () {
-  if (this.document) {
-    $(this.document.body).off('.' + TEXTSELECTOR_NS)
-  }
+  this.document && $(this.document.body).off('mouseup')
 }
 
 // Public: capture the current selection from the document, excluding any nodes
@@ -74,6 +70,7 @@ TextSelector.prototype.captureDocumentSelection = function () {
     if (normedRange === null) {
       rangesToIgnore.push(r)
     } else {
+      console.log('normedRange', normedRange)
       ranges.push(normedRange)
     }
   }
@@ -89,8 +86,10 @@ TextSelector.prototype.captureDocumentSelection = function () {
 
     // Add normed ranges back to the selection
   for (i = 0, len = ranges.length; i < len; i++) {
-    var range = ranges[i],
-      drange = this.document.createRange()
+    const range = ranges[i]
+    const drange = this.document.createRange()
+    console.log('range.start', range.start)
+    console.log('range.end', range.end)
     drange.setStartBefore(range.start)
     drange.setEndAfter(range.end)
     selection.addRange(drange)

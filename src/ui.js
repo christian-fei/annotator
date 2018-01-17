@@ -2,7 +2,6 @@
 exports.main = require('./ui/main').main
 
 // Export submodules for browser environments
-exports.adder = require('./ui/adder')
 exports.editor = require('./ui/editor')
 exports.filter = require('./ui/filter')
 exports.highlighter = require('./ui/highlighter')
