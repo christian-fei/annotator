@@ -36,7 +36,6 @@ function annotationFactory (contextEl, ignoreSelector) {
     }
 
     return {
-      quote: text.join(' / '),
       ranges: serializedRanges
     }
   }
